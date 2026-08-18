@@ -73,7 +73,7 @@ export default function LoginScreen() {
             <View style={styles.logoCircle}>
               <Ionicons name="school" size={48} color={colors.white} />
             </View>
-            <Text style={styles.title}>Math-Center</Text>
+            <Text style={styles.title}>Math-Sainte Bernadette</Text>
             <Text style={styles.subtitle}>{isLogin ? 'Connecte-toi' : 'Crée ton compte'}</Text>
           </LinearGradient>
 
