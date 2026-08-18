@@ -8,18 +8,25 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing, radius, shadows } from '../lib/theme';
 import { useProgress } from '../components/ProgressContext';
+import { useAuth } from '../components/AuthContext';
 import { EXERCISES, TOTAL_EXERCISES } from '../lib/exercises';
 import { getLevelFromXP } from '../lib/levelTitles';
 import { ProgressBar } from '../components/ProgressBar';
 import { LEVELS } from '../lib/exercises';
+import HomeButton from '../components/HomeButton';
+import { RootStackParamList } from '../App';
 
 export default function ProfileScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { progress, reset } = useProgress();
+  const { user, logout } = useAuth();
   const levelInfo = getLevelFromXP(progress.totalXP);
 
   const completedCount = Object.values(progress.exerciseProgress).filter(p => p.completed).length;
@@ -43,6 +50,23 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Se déconnecter ?',
+      'Tu pourras te reconnecter plus tard avec ton nom et mot de passe.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Déconnexion',
+          onPress: async () => {
+            await logout();
+            navigation.replace('Login');
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <StatusBar barStyle="light-content" />
@@ -54,10 +78,11 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.hero}
         >
+          <HomeButton />
           <View style={styles.avatar}>
             <Text style={styles.avatarEmoji}>{levelInfo.emoji}</Text>
           </View>
-          <Text style={styles.heroTitle}>{levelInfo.title}</Text>
+          <Text style={styles.heroTitle}>{user ? user.name : levelInfo.title}</Text>
           <Text style={styles.heroLevel}>Niveau {levelInfo.level} • {progress.totalXP} XP</Text>
 
           <View style={styles.heroStatsRow}>
@@ -188,6 +213,14 @@ export default function ProfileScreen() {
               <Text style={styles.aboutRowText}>13 badges à débloquer</Text>
             </View>
           </View>
+        </View>
+
+        {/* Logout */}
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={22} color={colors.primary} />
+            <Text style={styles.logoutText}>Se déconnecter</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Reset */}
@@ -329,4 +362,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.errorLight,
   },
   resetText: { color: colors.error, fontWeight: '800', fontSize: fontSizes.sm, marginLeft: spacing.sm },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 2,
+    borderColor: colors.primary + '50',
+    backgroundColor: colors.primary + '10',
+  },
+  logoutText: { color: colors.primary, fontWeight: '800', fontSize: fontSizes.sm, marginLeft: spacing.sm },
 });

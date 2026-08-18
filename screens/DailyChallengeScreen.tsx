@@ -15,6 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing, radius, shadows } from '../lib/theme';
 import { EXERCISES, LEVELS, TOPICS } from '../lib/exercises';
 import { useProgress } from '../components/ProgressContext';
+import HomeButton from '../components/HomeButton';
+import { useAuth } from '../components/AuthContext';
 import { isDailyCompleted, recordDailyCompletion } from '../lib/storage';
 import { RootStackParamList } from '../App';
 import { StarsDisplay } from '../components/StarsDisplay';
@@ -22,6 +24,7 @@ import { StarsDisplay } from '../components/StarsDisplay';
 export default function DailyChallengeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { progress, refresh } = useProgress();
+  const { user } = useAuth();
   const [completed, setCompleted] = useState(false);
 
   // Pick 3 exercises deterministically based on date
@@ -39,18 +42,20 @@ export default function DailyChallengeScreen() {
     React.useCallback(() => {
       (async () => {
         await refresh();
-        const c = await isDailyCompleted();
-        setCompleted(c);
+        if (user) {
+          const c = await isDailyCompleted(user.id);
+          setCompleted(c);
+        }
       })();
-    }, [refresh])
+    }, [refresh, user])
   );
 
   useEffect(() => {
     const allDone = dailyExercises.every(e => progress.exerciseProgress[e.id]?.completed);
-    if (allDone && !completed) {
-      recordDailyCompletion().then(() => setCompleted(true));
+    if (allDone && !completed && user) {
+      recordDailyCompletion(user.id).then(() => setCompleted(true));
     }
-  }, [progress]);
+  }, [progress, completed, user]);
 
   const allCompleted = dailyExercises.every(e => progress.exerciseProgress[e.id]?.completed);
 
@@ -66,6 +71,7 @@ export default function DailyChallengeScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={26} color={colors.white} />
         </TouchableOpacity>
+        <HomeButton />
         <View style={styles.headerContent}>
           <Text style={styles.headerEmoji}>⚡</Text>
           <Text style={styles.headerTitle}>Défi du jour</Text>

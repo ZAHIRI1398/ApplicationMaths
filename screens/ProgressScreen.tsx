@@ -15,6 +15,7 @@ import { LEVELS, TOPICS, TOTAL_EXERCISES, EXERCISES } from '../lib/exercises';
 import { BADGES } from '../lib/badges';
 import { ProgressBar } from '../components/ProgressBar';
 import { StarsDisplay } from '../components/StarsDisplay';
+import HomeButton from '../components/HomeButton';
 import { getLevelFromXP } from '../lib/levelTitles';
 
 export default function ProgressScreen() {
@@ -35,6 +36,7 @@ export default function ProgressScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.header}
         >
+          <HomeButton />
           <Text style={styles.headerTitle}>Mes progrès 📈</Text>
           <Text style={styles.headerSubtitle}>Regarde tout ce que tu as accompli !</Text>
 

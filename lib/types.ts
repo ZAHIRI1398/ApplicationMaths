@@ -108,3 +108,9 @@ export interface DailyChallenge {
   totalBonus: number;
   completed: boolean;
 }
+
+export interface User {
+  id: string;
+  name: string;
+  createdAt: string;
+}

@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing, radius, shadows } from '../lib/theme';
 import { LEVELS, TOPICS, getExercisesByLevelAndTopic } from '../lib/exercises';
 import { useProgress } from '../components/ProgressContext';
+import HomeButton from '../components/HomeButton';
 import { RootStackParamList } from '../App';
 import { Level, Topic } from '../lib/types';
 
@@ -55,6 +56,7 @@ export default function TopicScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={26} color={colors.white} />
         </TouchableOpacity>
+        <HomeButton />
         <View style={styles.headerContent}>
           <Text style={styles.headerEmoji}>{level.emoji}</Text>
           <Text style={styles.headerTitle}>{level.name}</Text>

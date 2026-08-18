@@ -13,11 +13,14 @@ import ExerciseScreen from './screens/ExerciseScreen';
 import ProgressScreen from './screens/ProgressScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import DailyChallengeScreen from './screens/DailyChallengeScreen';
+import LoginScreen from './screens/LoginScreen';
 import { ProgressProvider } from './components/ProgressContext';
+import { AuthProvider } from './components/AuthContext';
 import { Level, Topic, Exercise } from './lib/types';
 import { colors } from './lib/theme';
 
 export type RootStackParamList = {
+  Login: undefined;
   Home: undefined;
   Topic: { levelId: Level };
   ExerciseList: { levelId: Level; topicId: Topic };
@@ -47,20 +50,23 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ProgressProvider>
-          <NavigationContainer>
-            <StatusBar style="light" />
-            <Stack.Navigator screenOptions={screenOptions}>
-              <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="Topic" component={TopicScreen} />
-              <Stack.Screen name="ExerciseList" component={ExerciseListScreen} />
-              <Stack.Screen name="Exercise" component={ExerciseScreen} />
-              <Stack.Screen name="Progress" component={ProgressScreen} />
-              <Stack.Screen name="Profile" component={ProfileScreen} />
-              <Stack.Screen name="DailyChallenge" component={DailyChallengeScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </ProgressProvider>
+        <AuthProvider>
+          <ProgressProvider>
+            <NavigationContainer>
+              <StatusBar style="light" />
+              <Stack.Navigator screenOptions={screenOptions} initialRouteName="Login">
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="Topic" component={TopicScreen} />
+                <Stack.Screen name="ExerciseList" component={ExerciseListScreen} />
+                <Stack.Screen name="Exercise" component={ExerciseScreen} />
+                <Stack.Screen name="Progress" component={ProgressScreen} />
+                <Stack.Screen name="Profile" component={ProfileScreen} />
+                <Stack.Screen name="DailyChallenge" component={DailyChallengeScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ProgressProvider>
+        </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

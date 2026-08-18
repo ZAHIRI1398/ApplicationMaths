@@ -2,8 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserProgress, ExerciseProgress, Badge } from './types';
 import { BADGES, checkEarnedBadges } from './badges';
 
-const STORAGE_KEY = '@mathcenter_progress_v1';
-const DAILY_KEY = '@mathcenter_daily_v1';
+function getProgressKey(userId: string): string {
+  return `@mathcenter_progress_${userId}`;
+}
+
+function getDailyKey(userId: string): string {
+  return `@mathcenter_daily_${userId}`;
+}
 
 const DEFAULT_PROGRESS: UserProgress = {
   totalStars: 0,
@@ -18,9 +23,9 @@ const DEFAULT_PROGRESS: UserProgress = {
   stats: {},
 };
 
-export async function loadProgress(): Promise<UserProgress> {
+export async function loadProgress(userId: string): Promise<UserProgress> {
   try {
-    const data = await AsyncStorage.getItem(STORAGE_KEY);
+    const data = await AsyncStorage.getItem(getProgressKey(userId));
     if (data) {
       const parsed = JSON.parse(data);
       // Check streak
@@ -41,21 +46,22 @@ export async function loadProgress(): Promise<UserProgress> {
   }
 }
 
-export async function saveProgress(progress: UserProgress): Promise<void> {
+export async function saveProgress(userId: string, progress: UserProgress): Promise<void> {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    await AsyncStorage.setItem(getProgressKey(userId), JSON.stringify(progress));
   } catch (e) {
     console.error('Failed to save progress', e);
   }
 }
 
 export async function recordExerciseAttempt(
+  userId: string,
   exerciseId: string,
   correct: boolean,
   usedHints: boolean,
   stars: number
 ): Promise<{ progress: UserProgress; newBadges: Badge[] }> {
-  const progress = await loadProgress();
+  const progress = await loadProgress(userId);
   const today = new Date().toISOString().split('T')[0];
 
   // Update streak
@@ -113,38 +119,38 @@ export async function recordExerciseAttempt(
     }
   }
 
-  await saveProgress(progress);
+  await saveProgress(userId, progress);
   return { progress, newBadges };
 }
 
-export async function resetProgress(): Promise<void> {
-  await AsyncStorage.removeItem(STORAGE_KEY);
+export async function resetProgress(userId: string): Promise<void> {
+  await AsyncStorage.removeItem(getProgressKey(userId));
 }
 
-export async function recordDailyCompletion(): Promise<void> {
+export async function recordDailyCompletion(userId: string): Promise<void> {
   try {
-    const data = await AsyncStorage.getItem(DAILY_KEY);
+    const data = await AsyncStorage.getItem(getDailyKey(userId));
     const today = new Date().toISOString().split('T')[0];
     if (data) {
       const parsed = JSON.parse(data);
       if (parsed.date !== today) {
-        await AsyncStorage.setItem(DAILY_KEY, JSON.stringify({ date: today, completed: true }));
-        const progress = await loadProgress();
+        await AsyncStorage.setItem(getDailyKey(userId), JSON.stringify({ date: today, completed: true }));
+        const progress = await loadProgress(userId);
         progress.totalXP += 30;
-        await saveProgress(progress);
+        await saveProgress(userId, progress);
       }
     } else {
-      await AsyncStorage.setItem(DAILY_KEY, JSON.stringify({ date: today, completed: true }));
-      const progress = await loadProgress();
+      await AsyncStorage.setItem(getDailyKey(userId), JSON.stringify({ date: today, completed: true }));
+      const progress = await loadProgress(userId);
       progress.totalXP += 30;
-      await saveProgress(progress);
+      await saveProgress(userId, progress);
     }
   } catch (e) {}
 }
 
-export async function isDailyCompleted(): Promise<boolean> {
+export async function isDailyCompleted(userId: string): Promise<boolean> {
   try {
-    const data = await AsyncStorage.getItem(DAILY_KEY);
+    const data = await AsyncStorage.getItem(getDailyKey(userId));
     if (!data) return false;
     const parsed = JSON.parse(data);
     const today = new Date().toISOString().split('T')[0];

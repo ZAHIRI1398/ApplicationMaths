@@ -18,8 +18,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { colors, fontSizes, spacing, radius, shadows } from '../lib/theme';
-import { getExerciseById, LEVELS, TOPICS } from '../lib/exercises';
+import { getExerciseById, LEVELS, TOPICS, generateSameExercise } from '../lib/exercises';
 import { useProgress } from '../components/ProgressContext';
+import HomeButton from '../components/HomeButton';
 import { RootStackParamList } from '../App';
 import { ExerciseVisual } from '../components/ExerciseVisual';
 import { StarsDisplay } from '../components/StarsDisplay';
@@ -108,6 +109,12 @@ export default function ExerciseScreen() {
     navigation.goBack();
   };
 
+  const handleSameType = () => {
+    const next = generateSameExercise(exercise.level, exercise.topic, exercise.title, 1)[0];
+    setConfetti(false);
+    navigation.replace('Exercise', { exerciseId: next.id, exercise: next });
+  };
+
   const showStep = () => {
     if (currentStep < exercise.steps.length) {
       setCurrentStep(currentStep + 1);
@@ -122,8 +129,9 @@ export default function ExerciseScreen() {
 
       <LinearGradient colors={[topic.color, level.color]} style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="close" size={26} color={colors.white} />
+          <Ionicons name="chevron-back" size={26} color={colors.white} />
         </TouchableOpacity>
+        <HomeButton />
         <View style={styles.headerCenter}>
           <Text style={styles.headerEmoji}>{exercise.emoji}</Text>
           <Text style={styles.headerTitle}>{exercise.title}</Text>
@@ -357,6 +365,19 @@ export default function ExerciseScreen() {
                 >
                   <Text style={styles.continueText}>Continuer</Text>
                   <Ionicons name="arrow-forward" size={22} color={colors.white} />
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.sameTypeBtn} onPress={handleSameType} activeOpacity={0.85}>
+                <LinearGradient
+                    colors={[level.colorLight, level.colorLight]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.sameTypeGradient}
+                >
+                  <Ionicons name="refresh" size={22} color={level.color} />
+                  <Text style={styles.sameTypeText}>Refaire un exercice du même type</Text>
+                  <Ionicons name="arrow-forward" size={22} color={level.color} />
                 </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
@@ -610,4 +631,18 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   continueText: { color: colors.white, fontWeight: '800', fontSize: fontSizes.lg, marginRight: spacing.sm },
+  sameTypeBtn: {
+    marginTop: spacing.md,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    width: '100%',
+    ...shadows.md,
+  },
+  sameTypeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+  },
+  sameTypeText: { color: colors.text, fontWeight: '800', fontSize: fontSizes.md, marginHorizontal: spacing.sm },
 });

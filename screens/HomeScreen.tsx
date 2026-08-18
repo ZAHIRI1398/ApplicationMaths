@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing, radius, shadows } from '../lib/theme';
 import { LEVELS, TOPICS, EXERCISES, TOTAL_EXERCISES } from '../lib/exercises';
 import { useProgress } from '../components/ProgressContext';
+import { useAuth } from '../components/AuthContext';
 import { ProgressBar } from '../components/ProgressBar';
 import { StarsDisplay } from '../components/StarsDisplay';
 import { RootStackParamList } from '../App';
@@ -22,6 +23,7 @@ import { RootStackParamList } from '../App';
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { progress } = useProgress();
+  const { user } = useAuth();
 
   const totalAvailableStars = TOTAL_EXERCISES * 3;
   const overallProgress = (progress.totalStars / totalAvailableStars) * 100;
@@ -47,7 +49,7 @@ export default function HomeScreen() {
         >
           <View style={styles.heroTop}>
             <View>
-              <Text style={styles.greeting}>Salut, champion ! 👋</Text>
+              <Text style={styles.greeting}>Salut, {user ? user.name : 'champion'} ! 👋</Text>
               <Text style={styles.heroSubtitle}>Prêt pour de nouveaux défis ?</Text>
             </View>
             <View style={styles.heroActions}>

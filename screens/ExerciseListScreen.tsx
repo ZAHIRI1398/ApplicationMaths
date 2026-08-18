@@ -13,8 +13,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing, radius, shadows } from '../lib/theme';
-import { LEVELS, TOPICS, getExercisesByLevelAndTopic, generateGeneratedExercises, Exercise } from '../lib/exercises';
+import { LEVELS, TOPICS, getExercisesByLevelAndTopic, generateGeneratedExercises } from '../lib/exercises';
+import { Exercise } from '../lib/types';
 import { useProgress } from '../components/ProgressContext';
+import HomeButton from '../components/HomeButton';
 import { RootStackParamList } from '../App';
 import { StarsDisplay } from '../components/StarsDisplay';
 
@@ -28,7 +30,7 @@ export default function ExerciseListScreen() {
   const topic = TOPICS.find(t => t.id === topicId)!;
   
   const [generatedExercises, setGeneratedExercises] = useState<Exercise[]>([]);
-  const showGenerateButton = levelId === '1Obs' && topicId === 'numbers';
+  const showGenerateButton = true;
 
   const baseExercises = getExercisesByLevelAndTopic(levelId, topicId);
   const exercises = [...baseExercises, ...generatedExercises];
@@ -37,7 +39,7 @@ export default function ExerciseListScreen() {
   const completedCount = baseExercises.filter(e => progress.exerciseProgress[e.id]?.completed).length;
 
   const handleGenerateMore = () => {
-    const newExercises = generateGeneratedExercises(5);
+    const newExercises = generateGeneratedExercises(levelId, topicId, 5);
     setGeneratedExercises(prev => [...prev, ...newExercises]);
   };
 
@@ -51,6 +53,7 @@ export default function ExerciseListScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={26} color={colors.white} />
         </TouchableOpacity>
+        <HomeButton />
         <View style={styles.headerContent}>
           <Text style={styles.headerEmoji}>{topic.emoji}</Text>
           <Text style={styles.headerTitle}>{topic.name}</Text>

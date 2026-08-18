@@ -1,7 +1,21 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { UserProgress } from '../lib/types';
-import { loadProgress, saveProgress, recordExerciseAttempt as record, resetProgress } from '../lib/storage';
+import { loadProgress, recordExerciseAttempt as record, resetProgress } from '../lib/storage';
+import { useAuth } from './AuthContext';
 import { Badge } from '../lib/types';
+
+const DEFAULT_PROGRESS: UserProgress = {
+  totalStars: 0,
+  totalXP: 0,
+  currentStreak: 0,
+  longestStreak: 0,
+  lastActiveDate: '',
+  level: 1,
+  title: 'Apprenti',
+  badges: [],
+  exerciseProgress: {},
+  stats: {},
+};
 
 interface ProgressContextValue {
   progress: UserProgress;
@@ -14,43 +28,38 @@ interface ProgressContextValue {
 const ProgressContext = createContext<ProgressContextValue | undefined>(undefined);
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
-  const [progress, setProgress] = useState<UserProgress>({
-    totalStars: 0,
-    totalXP: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-    lastActiveDate: '',
-    level: 1,
-    title: 'Apprenti',
-    badges: [],
-    exerciseProgress: {},
-    stats: {},
-  });
+  const { user } = useAuth();
+  const [progress, setProgress] = useState<UserProgress>(DEFAULT_PROGRESS);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    const p = await loadProgress();
-    setProgress(p);
-  }, []);
+    if (user) {
+      const p = await loadProgress(user.id);
+      setProgress(p);
+    } else {
+      setProgress(DEFAULT_PROGRESS);
+    }
+  }, [user]);
 
   useEffect(() => {
     (async () => {
-      const p = await loadProgress();
-      setProgress(p);
+      await refresh();
       setLoading(false);
     })();
-  }, []);
+  }, [refresh]);
 
   const recordAttempt = useCallback(async (exerciseId: string, correct: boolean, usedHints: boolean, stars: number) => {
-    const result = await record(exerciseId, correct, usedHints, stars);
+    if (!user) return { newBadges: [] };
+    const result = await record(user.id, exerciseId, correct, usedHints, stars);
     setProgress(result.progress);
     return { newBadges: result.newBadges };
-  }, []);
+  }, [user]);
 
   const reset = useCallback(async () => {
-    await resetProgress();
+    if (!user) return;
+    await resetProgress(user.id);
     await refresh();
-  }, [refresh]);
+  }, [refresh, user]);
 
   return (
     <ProgressContext.Provider value={{ progress, loading, refresh, recordAttempt, reset }}>
