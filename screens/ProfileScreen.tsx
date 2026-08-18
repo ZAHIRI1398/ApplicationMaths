@@ -7,6 +7,7 @@ import {
   StatusBar,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -32,38 +33,39 @@ export default function ProfileScreen() {
   const completedCount = Object.values(progress.exerciseProgress).filter(p => p.completed).length;
   const perfectCount = Object.values(progress.exerciseProgress).filter(p => p.stars === 3).length;
 
+  const confirmAction = (title: string, message: string, onConfirm: () => void) => {
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined' && (window as any).confirm(`${title}\n\n${message}`);
+      if (confirmed) onConfirm();
+    } else {
+      Alert.alert(title, message, [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Confirmer', onPress: onConfirm },
+      ]);
+    }
+  };
+
   const handleReset = () => {
-    Alert.alert(
+    confirmAction(
       'Réinitialiser la progression ?',
       'Cette action effacera toutes tes étoiles et badges. Es-tu sûr ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Réinitialiser',
-          style: 'destructive',
-          onPress: async () => {
-            await reset();
-            Alert.alert('Fait !', 'Ta progression a été réinitialisée.');
-          },
-        },
-      ]
+      () => {
+        reset().then(() => {
+          Alert.alert('Fait !', 'Ta progression a été réinitialisée.');
+        });
+      }
     );
   };
 
   const handleLogout = () => {
-    Alert.alert(
+    confirmAction(
       'Se déconnecter ?',
       'Tu pourras te reconnecter plus tard avec ton nom et mot de passe.',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Déconnexion',
-          onPress: async () => {
-            await logout();
-            navigation.replace('Login');
-          },
-        },
-      ]
+      () => {
+        logout().then(() => {
+          navigation.replace('Login');
+        });
+      }
     );
   };
 
@@ -196,9 +198,9 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>ℹ️ À propos de l'app</Text>
           <View style={styles.aboutCard}>
             <Text style={styles.aboutEmoji}>🎓</Text>
-            <Text style={styles.aboutTitle}>Math-Center</Text>
+            <Text style={styles.aboutTitle}>Math-Sainte Bernadette</Text>
             <Text style={styles.aboutText}>
-              Une application pensée pour t'aider à progresser en maths, avec des exercices guidés du CM2 à la 5ème.
+              Une application pensée pour t'aider à progresser en maths, avec des exercices guidés du 1Obs  à la 2ème phase.
             </Text>
             <View style={styles.aboutRow}>
               <Ionicons name="heart" size={16} color={colors.error} />
