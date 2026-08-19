@@ -38,7 +38,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build:web": "expo export --platform web",
-    "deploy:web": "npx wrangler pages deploy dist"
+    "deploy:web": "npx wrangler pages project create applicationmaths --production-branch main 2>/dev/null; npx wrangler pages deploy dist"
   },
   "private": true
 }
